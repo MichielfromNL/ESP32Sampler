@@ -1,16 +1,16 @@
 ## ESP32 Sampler
 
 When I was setting up a Machine Learning sketch for sound processing, I ran across a pretty steep learning curve to get reliable sampling, 
-decibel measurement, signal analysis suchas FFT, MFCC and Shazam-style fingerprint creation. SO I decided: that can be made much more simple. 
-I found after lots of trial and error software,  in mostly C, but no always very suitable for simple embedded use.
+decibel measurement, signal analysis such as FFT, MFCC and Shazam-style fingerprint creation. So I decided: that can be made much more simple. 
+I found after lots of trial and error some usable software, mostly in C, but no always very suitable for simple embedded use. For example, many of these libraries have dynamic memory, somthing that you can only do using setup in embedded environments.
 
-Setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set
+IN addition, setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set
 the right parameters.
 
-ESP32 Sampler is a  simple wrapper around Phil Schatzman's awsome audiostream. I adapted that for pure mono-signal input,
+ESP32 Sampler is a simple wrapper around Phil Schatzman's awsome audiostream. I adapted that for pure mono-signal input,
 and added esp32 ADC calibration to get accurate millivolts, which is needed for Decibel measurements.  
 I turned that into a class which properly inits the ADC , sets up the audiotools and collects buffers
-Besides that I believe that class-style interfaces bring a lot of benefit in hiding complexities.
+Besides that class-style interfaces have a a lot of benefit in hiding complexities.
   
 The whole idea of sampling is to get a bunch of 16-bits ADC values in pretty accurate millivolts, with no CPU overhead as possible. 
 The beauty of the ADC-I2S approach is, besides cheap and easy hardware, that the ADC and I2S subsystems are ESP32 hardware-native and use no CPU. The only CPU cycles ar for copying the data.
@@ -20,7 +20,6 @@ It works for quite high frequencies, 44100 is easy , doc says up to hundreds of 
 
 Extra note:  With sampling, an important thing is to use RTOS, so that you can  put a sampler task on a separate core. 
 Believe me: RTOS is awsome, and very much needed in systems that process lots of data. 
-
 
 ```c++
 #include <Arduino.h>
@@ -53,12 +52,12 @@ Believe me: RTOS is awsome, and very much needed in systems that process lots of
 - The Sample frequency. Speaks for itself
 - Num of samples to collect in each run. best is a ^2 number, 64, 128, .. 1024, 2048, all fine.  max is 8192 in one run.
 - the Input pin, Supported are GPIO32 - 39  
-- Multisample:  in noisy environments (e.g.  Wifi introduces spikes) multi-sampling takes the average of multiple readings. Remember though,that 8192 is the max. So if you want the average of 4x samples for 1024 samples, the sampler creates 4 buffers hat are always 1024, and sets the frequency to 4x your sample frequency.
- - Extra buffers:  suppose your task needs more time than the hardware need to collect data. If you don;t have extra buffers there may be overrum. Example:  at 8192 Hz sample frequency, a run of 1024 samples takes 125 msec. If your task needs less than that there is no problem becuase the collection takes no time (hardware, remember). But if onnce in a hile you need 200 msec, an extra buffer is needed. Times multisample. PLus, extra buffers take up memory, so only do tat when needed.  
- - Mode can be SMODE_AC, or SMODE_DC . Because when you analyze sound, it is easier to rule out DC and have signals centered around 0. hence the int16_t 
- 
+- Multisample:  in noisy environments (e.g.  Wifi introduces spikes) multi-sampling takes the average of multiple readings. Remember though,that 8192 is the max. So if you want the average of 4x samples for 1024 samples, the sampler creates 4 buffers that are always 1024, and sets the frequency to 4x your sample frequency.
+ - Extra buffers:  suppose your task needs more time than the hardware need to collect data. If you don't have extra buffers there may be overrum. Example:  at 8192 Hz sample frequency, a run of 1024 samples takes 125 msec. If your task needs less than that there is no problem becuase the collection takes no time (hardware, remember). But if once in a while you need 200 msec, an extra buffer is needed. Times multisample. Plus, extra buffers take up memory, so only do tat when needed.  
+ - Mode can be SMODE_AC, or SMODE_DC . Because when you analyze sound, it is easier to rule out DC and have signals centered around 0. 
+
 Samples are *always* 16 bits . Although it is possible to have less bits my sampler does not support that out of the box
-Sample data is signed with AC mode,  true AC +- millivolts are returned
+Sample data is signed with AC mode,  true AC +- millivolts are returned. hence the in16_t.
 
 ```ç++
 typedef sample_t int16_t;
@@ -99,7 +98,7 @@ The collect call is blocking, it waits for the hardware to provide the number of
 ## meausure
 
 A cute little feature is Sampler.Measure(pin,msecs) . Can be used for setup tasks. 
-It measures during a number of msecs and retusn the average in accurate mvolts. An better alternative for AnalogueRead
+It measures during a number of msecs and returns the average in accurate mvolts. An better alternative for AnalogueRead
 It can not be used when the sampler is running, 
 The example sketch outlines a use case
 
