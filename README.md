@@ -4,8 +4,7 @@ When I was setting up a Machine Learning sketch for sound processing, I ran acro
 decibel measurement, signal analysis such as FFT, MFCC and Shazam-style fingerprint creation. So I decided: that can be made much more simple. 
 I found after lots of trial and error some usable software, mostly in C, but no always very suitable for simple embedded use. For example, many of these libraries have dynamic memory, somthing that you can only do using setup in embedded environments.
 
-IN addition, setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set
-the right parameters.
+In addition, setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set the right parameters.
 
 ESP32 Sampler is a simple wrapper around Phil Schatzman's awsome audiostream. I adapted that for pure mono-signal input,
 and added esp32 ADC calibration to get accurate millivolts, which is needed for Decibel measurements.  
