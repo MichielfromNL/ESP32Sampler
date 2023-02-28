@@ -21,8 +21,6 @@
   With sampling, an important thing to do is use RTOS, so that you can  put a sampler task on a separate core. 
   Believe me: RTOS is awsome, and very much needed in systems that process lots of data.
   This sketch tells you how to do that too. 
-  
-  S/w is the MIT License
   -------
 
 I explain how this works with some code 
@@ -30,15 +28,37 @@ I explain how this works with some code
 ```c++
 #include <Arduino.h>
 #include "ESP32Sampler.h"
+
+// Default values :
+
+#define SMP_DEFAULT_VMAX         3.3           
+#define SMP_DEFAULT_FREQUENCY    44100
+#define SMP_DEFAULT_SAMPLES      1024
+#define SMP_DEFAULTPIN           GPIO_NUM_34  // ADC1 channel 6
+#define SMP_DEFAULT_MULTISAMPLE  2
+#define SMP_DEFAULT_EXTRABUFFERS 0
+#define SMP_DEFAULT_MODE         SMODE_DC
 ```
-## Parameters
+## Parameters:
+
+```c++
+  Config.vmax   1.1 - 3.3
+  Config.samplefrequency  up to 500000 / multisample 
+  Config.numsamples 16 -= 8192
+  Config.pin GPIO32 - 39
+  Config.mode   AC or DC
+  Config.multisample 0-4 depending on buffers
+  Config.extrabuffers 0+, depending on needs
+```
+## parameters explained
+
 - VMAX needs to be set for the max input voltage of the microphone, which is determined by the hardware setup.
 - The Sample frequency. Speaks for itself
 - Num of samples to collect in each run. best is a ^2 number, 64, 128, .. 1024, 2048, all fine.  max is 8192 in one run.
 - the Input pin, Supported are GPIO32 - 39  
 - Multisample:  in noisy environments (e.g.  Wifi introduces spikes) multi-sampling takes the average of multiple readings. Remember though,that 8192 is the max. So if you want the average of 4x samples for 1024 samples, the sampler creates 4 buffers hat are always 1024, and sets the frequency to 4x your sample frequency.
  - Extra buffers:  suppose your task needs more time than the hardware need to collect data. If you don;t have extra buffers there may be overrum. Example:  at 8192 Hz sample frequency, a run of 1024 samples takes 125 msec. If your task needs less than that there is no problem becuase the collection takes no time (hardware, remember). But if onnce in a hile you need 200 msec, an extra buffer is needed. Times multisample. PLus, extra buffers take up memory, so only do tat when needed.  
- - Sample node can be SMODE_AC, or SMODE_DC . Because when you analyze sound, it is easier to rule out DC and have signals centered around 0. hence the int16_t 
+ - Mode can be SMODE_AC, or SMODE_DC . Because when you analyze sound, it is easier to rule out DC and have signals centered around 0. hence the int16_t 
  
 Samples are *always* 16 bits . Although it is possible to have less bits my sampler does not support that out of the box
 Sample data is signed with AC mode,  true AC +- millivolts are returned
@@ -47,29 +67,14 @@ Sample data is signed with AC mode,  true AC +- millivolts are returned
 typedef sample_t int16_t;
 ```
 
-Default values for the sampler are:
-
-```c++
-#define SMP_DEFAULT_VMAX         3.3           
-#define SMP_DEFAULT_FREQUENCY    44100
-#define SMP_DEFAULT_SAMPLES      1024
-#define SMP_DEFAULTPIN           GPIO_NUM_34  // ADC1 channel 6
-#define SMP_DEFAULT_MULTISAMPLE  2
-#define SMP_DEFAULT_EXTRABUFFERS 0
-#define SMP_DEFAULT_MODE         SMODE_DC
-```c++
-
 // connect analogue breakout e.g MAX 4466 to pin 34
 const gpio_num_t micPin = GPIO_NUM_34;
-
 // Optional, and for fun: connect pin 39 to 25
 const gpio_num_t calibratePin = GPIO_NUM_39; 
 const gpio_num_t vrefPin = GPIO_NUM_25;   // anaLog out for VREF routing
-```
 
-## how to init?
-```c++
-  // Get the default config and set parameters
+// Get the default config and set parameters
+
   SamplerConfig Config = Sampler.defaultConfig();
   // 8192 Hz at GPIO34, 1024 samples, AC mode, reduce noise  
   Config.pin = micPin;
@@ -94,7 +99,6 @@ The collect call is blocking, it waits for the hardware to provide the number of
 ```c++
   Sampler.Collect(Samples, 1024);
 ```
-
 ## meausure
 
 A cute little feature is Sampler.Measure(pin,msecs) . Can be used for setup tasks. 
