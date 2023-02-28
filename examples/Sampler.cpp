@@ -88,16 +88,13 @@ void setup() {
   Sampler.setConfig(Config);
 
   xTaskCreatePinnedToCore(SoundCollector, "Collector", 4096, NULL, COLLECTOR_TASK_PRIORITY, &CollectorTaskHandle, 0);
-
 }
 
-void SoundCollector(void *pvParameters) {
-  
+void SoundCollector(void *pvParameters) {  
   unsigned  loopcounter = 0;
   time_t    t0;
 
   Serial.println("Collector task");
-  
   Sampler.Begin();
 
   // task loop
@@ -114,7 +111,7 @@ void SoundCollector(void *pvParameters) {
 }
 
 // do other things, such as receiving data from a queue 
-// provided by the sanpler task . See my other sketches for examples
+// provided by the sampler task . See my other sketches for examples
 // 
 void loop() {
   vTaskDelay(10);
