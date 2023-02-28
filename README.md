@@ -1,29 +1,26 @@
-  ## ESP32 Sampler
-  
-  When I was setting up a Machine Learning sketch for sound processing, I ran across a pretty steep learning curve to get reliable sampling, 
-  decibel measurement, signal analysis suchas FFT, MFCC and Shazam-style fingerprint creation. SO I decided: that can be made much more simple. 
-  I found after lots of trial and error software,  in mostly C, but no always very suitable for simple embedded use.
-  
-  Setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set
-  the right parameters.
+## ESP32 Sampler
 
-  ESP32 Sampler is a  simple wrapper around Phil Schatzman's awsome audiostream. I adapted that for pure mono-signal input,
-  and added esp32 ADC calibration to get accurate millivolts, which is needed for Decibel measurements.  
-  I turned that into a class which properly inits the ADC , sets up the audiotools and collects buffers
-  Besides that I believe that class-style interfaces bring a lot of benefit in hiding complexities.
-  
-  The whole idea of sampling is to get a bunch of 16-bits ADC values in pretty accurate millivolts, with no CPU overhead as possible. 
-  The beauty of the ADC-I2S approach is, besides cheap and easy hardware, that the ADC and I2S subsystems are ESP32 hardware-native and use no CPU. The only CPU cycles ar for copying the data.
-  
-  ESP32Sampler is a singleton class, alread instantiated, ready to use.
-  It works for quite high frequencies, 44100 is easy , doc says up to hundreds of Kb/sec 
+When I was setting up a Machine Learning sketch for sound processing, I ran across a pretty steep learning curve to get reliable sampling, 
+decibel measurement, signal analysis suchas FFT, MFCC and Shazam-style fingerprint creation. SO I decided: that can be made much more simple. 
+I found after lots of trial and error software,  in mostly C, but no always very suitable for simple embedded use.
 
-  With sampling, an important thing to do is use RTOS, so that you can  put a sampler task on a separate core. 
-  Believe me: RTOS is awsome, and very much needed in systems that process lots of data.
-  This sketch tells you how to do that too. 
-  -------
+Setting up fast sound / signal sampling is, despite audiotools, still quite a bit of work. Because of the I2S, ADC and other parametrs and driver details.  How to properly init de ESP32 ADC, which ADC to use, how to use ESP32 calibration, how to find and set
+the right parameters.
 
-I explain how this works with some code 
+ESP32 Sampler is a  simple wrapper around Phil Schatzman's awsome audiostream. I adapted that for pure mono-signal input,
+and added esp32 ADC calibration to get accurate millivolts, which is needed for Decibel measurements.  
+I turned that into a class which properly inits the ADC , sets up the audiotools and collects buffers
+Besides that I believe that class-style interfaces bring a lot of benefit in hiding complexities.
+  
+The whole idea of sampling is to get a bunch of 16-bits ADC values in pretty accurate millivolts, with no CPU overhead as possible. 
+The beauty of the ADC-I2S approach is, besides cheap and easy hardware, that the ADC and I2S subsystems are ESP32 hardware-native and use no CPU. The only CPU cycles ar for copying the data.
+
+ESP32Sampler is a singleton class, alread instantiated, ready to use.
+It works for quite high frequencies, 44100 is easy , doc says up to hundreds of Kb/sec 
+
+Extra note:  With sampling, an important thing is to use RTOS, so that you can  put a sampler task on a separate core. 
+Believe me: RTOS is awsome, and very much needed in systems that process lots of data. 
+
 
 ```c++
 #include <Arduino.h>
@@ -65,7 +62,7 @@ Sample data is signed with AC mode,  true AC +- millivolts are returned
 
 ```ç++
 typedef sample_t int16_t;
-```
+sample_t Samples[1024];  // the collect buffer
 
 // connect analogue breakout e.g MAX 4466 to pin 34
 const gpio_num_t micPin = GPIO_NUM_34;
