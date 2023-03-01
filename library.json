@@ -2,7 +2,7 @@
   "name": "ESP32Sampler",
   "keywords": "ESP32, Sampler, AcDc, I2S, ADC",
   "description": "A simple and efficient ESP32 analogue Sampler based on ADC-I2S, wrapped around audiotools for embedded C++.", 
-  "homepage": "https://",
+  "homepage": "https://github.com/MichielFromNL",
   "repository": {
     "type": "git",
     "url": "https://github.com/MichielFromNL/ESP32Sampler.git"
